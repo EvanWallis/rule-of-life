@@ -12,6 +12,7 @@ import {
 } from "@/lib/practices";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_TIME_ZONE, getLocalToday, getLocalWeekdayIndex } from "@/lib/time";
+import { getDailyVerse } from "@/lib/dailyVerse";
 
 import TodayChecklist from "./TodayChecklist";
 
@@ -72,9 +73,6 @@ export default async function TodayPage() {
   const overrides = (overridesData ?? []) as PracticeOverride[];
   const effective = applyOverrides(practices, overrides);
   const todayEffective = sortPractices(filterForToday(effective, weekdayIdx));
-  const weeklyEffective = sortPractices(
-    effective.filter((p) => p.is_active && p.is_enabled && p.recurrence === "WEEKLY"),
-  );
 
   const todayIds = todayEffective.map((p) => p.id);
   const { data: completionsData, error: completionsError } = await supabase
@@ -121,20 +119,7 @@ export default async function TodayPage() {
     };
   }).filter((g) => g.items.length > 0);
 
-  const upcomingWeekly = weeklyEffective
-    .map((p) => ({ ...p, weekday: p.effective_scheduled_weekday }))
-    .filter(
-      (p): p is typeof p & { weekday: number } =>
-        typeof p.weekday === "number" && p.weekday >= 0 && p.weekday <= 6,
-    )
-    .filter((p) => p.weekday !== weekdayIdx)
-    .sort((a, b) => {
-      const aIn = (a.weekday - weekdayIdx + 7) % 7;
-      const bIn = (b.weekday - weekdayIdx + 7) % 7;
-      if (aIn !== bIn) return aIn - bIn;
-      return a.effective_title.localeCompare(b.effective_title);
-    })
-    .slice(0, 3);
+  const { verse: dailyVerse } = getDailyVerse({ timeZone: DEFAULT_TIME_ZONE });
 
   return (
     <div>
@@ -157,37 +142,20 @@ export default async function TodayPage() {
 
       <TodayChecklist groups={groups} />
 
-      {upcomingWeekly.length > 0 ? (
-        <section className="mt-8 rounded-2xl border border-black/10 bg-white/50 px-5 py-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
-            Coming Up
-          </h2>
-          <ul className="mt-3 grid gap-2">
-            {upcomingWeekly.map((p) => {
-              const inDays = (p.weekday - weekdayIdx + 7) % 7;
-              const when = inDays === 1 ? "Tomorrow" : `In ${inDays} days`;
-              const weekdayLabel = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][p.weekday] ?? "";
-
-              return (
-                <li key={p.id} className="flex items-start justify-between gap-3 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-[var(--foreground)]">{p.effective_title}</p>
-                    {p.effective_description ? (
-                      <p className="mt-0.5 text-xs text-[var(--ink-soft)]">{p.effective_description}</p>
-                    ) : null}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
-                      {weekdayLabel}
-                    </p>
-                    <p className="mt-0.5 text-xs text-[var(--ink-soft)]">{when}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
+      <section className="mt-8 rounded-2xl border border-black/10 bg-white/50 px-5 py-4">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
+          Verse For Today
+        </h2>
+        {dailyVerse.text ? (
+          <p className="mt-3 text-sm text-[var(--foreground)]">{dailyVerse.text}</p>
+        ) : null}
+        <p className="mt-3 text-sm font-semibold text-[var(--foreground)]">{dailyVerse.reference}</p>
+        {!dailyVerse.text ? (
+          <p className="mt-1 text-xs text-[var(--ink-soft)]">
+            Add verse text locally if you have permission to redistribute your chosen translation.
+          </p>
+        ) : null}
+      </section>
     </div>
   );
 }
