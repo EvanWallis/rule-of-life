@@ -117,10 +117,7 @@ export default function TodayChecklist({ groups }: { groups: ChecklistGroup[] })
         </section>
       ))}
 
-      <p className="text-xs text-[var(--ink-soft)]">
-        {isPending ? "Saving…" : "One tap. No timers. No streaks."}
-      </p>
+      <p className="text-xs text-[var(--ink-soft)]">{isPending ? "Saving…" : null}</p>
     </div>
   );
 }
-
