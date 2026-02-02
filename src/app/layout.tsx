@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Rule of Life",
   description: "A gentle daily checklist that adapts to the liturgical season.",
+  icons: {
+    icon: [{ url: "/icon.png" }],
+    apple: [{ url: "/apple-touch-icon.png" }],
+  },
 };
 
 export default function RootLayout({
