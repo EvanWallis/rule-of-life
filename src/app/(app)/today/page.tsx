@@ -146,15 +146,8 @@ export default async function TodayPage() {
         <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
           Verse For Today
         </h2>
-        {dailyVerse.text ? (
-          <p className="mt-3 text-sm text-[var(--foreground)]">{dailyVerse.text}</p>
-        ) : null}
+        <p className="mt-3 text-sm text-[var(--foreground)]">{dailyVerse.text}</p>
         <p className="mt-3 text-sm font-semibold text-[var(--foreground)]">{dailyVerse.reference}</p>
-        {!dailyVerse.text ? (
-          <p className="mt-1 text-xs text-[var(--ink-soft)]">
-            Add verse text locally if you have permission to redistribute your chosen translation.
-          </p>
-        ) : null}
       </section>
     </div>
   );
